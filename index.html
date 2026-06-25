@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grille d'évaluation PFMP — EREA Jean Monnet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --orange:#E8852A;
+    --teal:#3DAFBC;
+    --blue:#3A6EB0;
+    --navy:#1B3A52;
+    --ink:#1d2733;
+    --muted:#6a7785;
+    --line:#d9e0e7;
+    --line-strong:#c2ccd6;
+    --paper:#ffffff;
+    --bg:#eef2f5;
+    --field:#f4f7f9;
+    /* échelle de note 1→5 : froid (faible) vers chaud/validé */
+    --s1:#d98c8c;
+    --s2:#e0b07a;
+    --s3:#e8cf6f;
+    --s4:#7cc0a8;
+    --s5:#3DAFBC;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(27,58,82,.04),0 12px 34px rgba(27,58,82,.10);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;font-family:'Inter',system-ui,sans-serif;color:var(--ink);
+    background:
+      radial-gradient(1200px 600px at 90% -10%, rgba(61,175,188,.10), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(232,133,42,.08), transparent 55%),
+      var(--bg);
+    line-height:1.45;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:980px;margin:0 auto;padding:26px 18px 60px}
+
+  /* ---------- Sticky résultat ---------- */
+  .scorebar{
+    position:sticky;top:0;z-index:30;margin:-26px -18px 22px;padding:12px 18px;
+    background:rgba(255,255,255,.86);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  }
+  .scorebar .brandmini{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.02em;color:var(--navy)}
+  .regmark{width:20px;height:20px;flex:none}
+  .scorebar .grow{flex:1}
+  .pill{
+    display:flex;align-items:center;gap:10px;background:var(--field);
+    border:1px solid var(--line);border-radius:999px;padding:6px 8px 6px 14px;
+  }
+  .pill .lab{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+  .pill .v{font-family:'Space Grotesk';font-weight:700;font-size:15px;color:var(--navy)}
+  .final{
+    display:flex;align-items:baseline;gap:8px;background:var(--navy);color:#fff;
+    border-radius:999px;padding:8px 18px;box-shadow:var(--shadow);
+  }
+  .final .num{font-family:'Space Grotesk';font-weight:700;font-size:26px;line-height:1}
+  .final .den{font-family:'Space Grotesk';font-weight:600;font-size:15px;opacity:.7}
+  .final .lab{font-size:11px;text-transform:uppercase;letter-spacing:.08em;opacity:.75;margin-right:2px}
+
+  /* ---------- Carte document ---------- */
+  .doc{background:var(--paper);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .head{padding:30px 34px 26px;border-bottom:1px solid var(--line)}
+  .logo{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+  .logo .mark{display:flex;gap:3px}
+  .logo .mark span{width:9px;height:26px;border-radius:2px}
+  .logo .txt{font-family:'Space Grotesk';font-weight:700;font-size:19px;letter-spacing:.06em;color:var(--navy)}
+  .logo .txt small{display:block;font-family:'Inter';font-weight:500;font-size:9.5px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+  h1{
+    font-family:'Space Grotesk';font-weight:700;font-size:clamp(26px,4.4vw,40px);
+    line-height:1.04;margin:0;color:var(--ink);text-transform:uppercase;letter-spacing:-.01em;
+  }
+  h1 .pfmp{display:block;font-size:13px;letter-spacing:.18em;color:var(--orange);font-weight:600;margin-top:10px;text-transform:none}
+
+  /* ---------- Identité ---------- */
+  .identity{padding:22px 34px 6px;display:grid;gap:14px}
+  .fieldrow{display:grid;grid-template-columns:210px 1fr;align-items:center;gap:14px}
+  .fieldrow label{font-weight:600;color:var(--navy);font-size:13.5px;text-transform:uppercase;letter-spacing:.04em}
+  .fieldrow input{
+    width:100%;border:none;border-bottom:1.5px dotted var(--line-strong);background:transparent;
+    padding:9px 4px;font-family:inherit;font-size:15.5px;color:var(--ink);
+  }
+  .fieldrow input:focus{outline:none;border-bottom-color:var(--teal);border-bottom-style:solid}
+
+  .meta{padding:14px 34px 26px;display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+  .meta .datebox{display:flex;align-items:center;gap:10px;background:var(--orange);border-radius:10px;padding:7px 7px 7px 14px}
+  .meta .datebox span{color:#fff;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.04em}
+  .meta .datebox input{border:none;border-radius:6px;padding:7px 10px;font-family:inherit;font-size:14px}
+  .meta .datebox input:focus{outline:2px solid var(--navy)}
+  .modes{display:flex;gap:8px}
+  .modes button{
+    border:1.5px solid var(--line-strong);background:var(--paper);color:var(--muted);
+    padding:9px 16px;border-radius:10px;font-family:inherit;font-weight:600;font-size:13.5px;cursor:pointer;
+    display:flex;align-items:center;gap:8px;transition:.15s;
+  }
+  .modes button .dot{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--line-strong)}
+  .modes button[aria-pressed="true"]{border-color:var(--orange);color:var(--navy);background:#fdf3e9}
+  .modes button[aria-pressed="true"] .dot{background:var(--orange);border-color:var(--orange)}
+
+  /* ---------- Sections ---------- */
+  .section{padding:0 34px}
+  .section + .section{margin-top:8px}
+  .sechead{
+    display:flex;align-items:center;gap:12px;color:#fff;font-weight:700;
+    padding:13px 18px;border-radius:10px;margin:18px 0 4px;font-size:15.5px;
+  }
+  .sechead .n{
+    font-family:'Space Grotesk';font-weight:700;background:rgba(255,255,255,.22);
+    width:28px;height:28px;border-radius:7px;display:grid;place-items:center;font-size:15px;flex:none;
+  }
+  .sec1 .sechead{background:var(--teal)}
+  .sec2 .sechead{background:var(--blue)}
+  .sechint{font-size:12.5px;color:var(--muted);padding:8px 4px 4px;display:flex;justify-content:space-between;align-items:center}
+  .sechint .scale{display:flex;gap:6px;font-weight:600}
+  .sechint .scale b{color:var(--navy)}
+
+  .crit{
+    display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;
+    padding:12px 4px;border-bottom:1px solid var(--line);
+  }
+  .crit:last-child{border-bottom:none}
+  .crit .lbl{font-size:14.5px;color:var(--ink)}
+  .crit.done .lbl{color:var(--ink)}
+  .crit .num{font-family:'Space Grotesk';font-weight:600;color:var(--muted);margin-right:7px}
+  .scores{display:flex;gap:6px}
+  .scores button{
+    width:42px;height:42px;border-radius:11px;border:1.5px solid var(--line-strong);
+    background:var(--paper);font-family:'Space Grotesk';font-weight:600;font-size:16px;color:var(--muted);
+    cursor:pointer;transition:transform .08s, background .12s, color .12s, border-color .12s;
+  }
+  .scores button:hover{border-color:var(--navy);color:var(--navy)}
+  .scores button:focus-visible{outline:3px solid rgba(58,110,176,.4);outline-offset:2px}
+  .scores button[aria-pressed="true"]{color:#fff;border-color:transparent;transform:translateY(-1px)}
+  .scores button[data-v="1"][aria-pressed="true"]{background:var(--s1)}
+  .scores button[data-v="2"][aria-pressed="true"]{background:var(--s2);color:var(--ink)}
+  .scores button[data-v="3"][aria-pressed="true"]{background:var(--s3);color:var(--ink)}
+  .scores button[data-v="4"][aria-pressed="true"]{background:var(--s4)}
+  .scores button[data-v="5"][aria-pressed="true"]{background:var(--s5)}
+
+  .subtotal{
+    display:flex;justify-content:flex-end;align-items:center;gap:10px;
+    padding:12px 4px 4px;font-size:13.5px;color:var(--muted);font-weight:600;
+  }
+  .subtotal b{font-family:'Space Grotesk';color:var(--navy);font-size:16px}
+
+  /* ---------- Observation + résultat ---------- */
+  .footgrid{padding:24px 34px 30px;display:grid;grid-template-columns:1fr 280px;gap:26px;align-items:start;margin-top:14px;border-top:1px solid var(--line)}
+  .obs label{display:block;font-weight:600;color:var(--navy);font-size:13.5px;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+  .obs textarea{
+    width:100%;min-height:130px;border:1.5px solid var(--line);border-radius:12px;background:var(--field);
+    padding:12px 14px;font-family:inherit;font-size:14.5px;color:var(--ink);resize:vertical;
+  }
+  .obs textarea:focus{outline:none;border-color:var(--teal);background:var(--paper)}
+  .resultcard{background:var(--navy);color:#fff;border-radius:14px;padding:20px;text-align:center}
+  .resultcard .row{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;opacity:.85;padding:4px 0}
+  .resultcard .row b{font-family:'Space Grotesk';font-size:16px;opacity:1}
+  .resultcard .big{margin:10px 0 4px;border-top:1px solid rgba(255,255,255,.18);padding-top:14px}
+  .resultcard .big .n{font-family:'Space Grotesk';font-weight:700;font-size:54px;line-height:1}
+  .resultcard .big .d{font-family:'Space Grotesk';font-weight:600;font-size:22px;opacity:.6}
+  .resultcard .prog{font-size:12px;opacity:.7;margin-top:8px}
+  .resultcard .barwrap{height:6px;background:rgba(255,255,255,.18);border-radius:99px;margin-top:8px;overflow:hidden}
+  .resultcard .bar{height:100%;width:0;background:linear-gradient(90deg,var(--orange),var(--teal));transition:width .3s}
+
+  .signs{padding:0 34px 30px;display:grid;grid-template-columns:1fr 1fr;gap:30px}
+  .sign{border-top:1px dotted var(--line-strong);padding-top:10px;font-size:12.5px;color:var(--muted)}
+  .sign em{color:var(--ink);font-style:normal}
+  .sign small{display:block;font-style:italic;margin-top:2px}
+
+  /* ---------- Barre d'actions ---------- */
+  .actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end;margin-top:22px}
+  .btn{
+    border:none;border-radius:11px;padding:12px 22px;font-family:inherit;font-weight:600;font-size:14.5px;
+    cursor:pointer;display:inline-flex;align-items:center;gap:9px;transition:.15s;
+  }
+  .btn.primary{background:var(--navy);color:#fff;box-shadow:var(--shadow)}
+  .btn.primary:hover{background:#13293b}
+  .btn.ghost{background:var(--paper);color:var(--navy);border:1.5px solid var(--line-strong)}
+  .btn.ghost:hover{border-color:var(--navy)}
+  .btn svg{width:18px;height:18px}
+
+  @media (max-width:720px){
+    .wrap{padding:18px 12px 50px}
+    .head,.identity,.meta,.section,.footgrid,.signs{padding-left:18px;padding-right:18px}
+    .fieldrow{grid-template-columns:1fr;gap:4px}
+    .fieldrow label{font-size:12px}
+    .crit{grid-template-columns:1fr;gap:10px}
+    .scores{justify-content:space-between}
+    .scores button{width:18%;height:46px}
+    .footgrid{grid-template-columns:1fr}
+    .signs{grid-template-columns:1fr;gap:18px}
+    .scorebar{margin:-18px -12px 18px;padding:10px 12px}
+    .scorebar .brandmini span.full{display:none}
+  }
+
+  /* ---------- Impression : tout sur une seule page ---------- */
+  @media print{
+    @page{size:A4;margin:8mm}
+    html,body{background:#fff}
+    .wrap{max-width:none;padding:0}
+    .scorebar,.actions,.sechint .scale{display:none!important}
+    .doc{box-shadow:none;border-radius:0}
+    .head,.identity,.meta,.section,.footgrid,.signs{padding-left:0;padding-right:0}
+
+    .head{padding-top:0;padding-bottom:6px;border-bottom:none}
+    .logo{margin-bottom:6px}
+    .logo .mark span{height:18px}
+    .logo .txt{font-size:15px}
+    .logo .txt small{font-size:8px}
+    h1{font-size:18px}
+    h1 .pfmp{margin-top:3px;font-size:10px}
+
+    .identity{padding-top:6px;gap:3px}
+    .fieldrow{grid-template-columns:190px 1fr;gap:10px}
+    .fieldrow label{font-size:10px}
+    .fieldrow input{font-size:12px;padding:3px 4px}
+
+    .meta{padding-top:6px;padding-bottom:6px;gap:8px}
+    .datebox{padding:3px 4px 3px 10px}
+    .datebox span{font-size:10px}
+    .datebox input{padding:3px 6px;font-size:11px}
+    .modes button{padding:4px 10px;font-size:10px}
+
+    .sechead{padding:5px 12px;font-size:11.5px;margin:6px 0 0;border-radius:6px}
+    .sechead .n{width:18px;height:18px;font-size:11px}
+    .sechint{padding:3px 2px 0;font-size:10px}
+    .crit{grid-template-columns:1fr auto;gap:12px;padding:2.5px 0;break-inside:avoid;align-items:center;border-bottom:1px solid #eef1f4}
+    .crit .lbl{font-size:10px;line-height:1.25}
+    .crit .num{font-size:10px}
+    .scores{width:auto;gap:3px;justify-content:flex-end}
+    .scores button{width:24px;height:20px;font-size:10px;border-color:#999;border-radius:5px}
+    .subtotal{padding:3px 2px 0;font-size:10px}
+    .subtotal b{font-size:12px}
+
+    /* Bloc bas compact : observation à gauche, note discrète à droite */
+    .footgrid{padding:8px 0 0;gap:14px;border-top:1px solid var(--line);grid-template-columns:1fr 200px;break-inside:avoid}
+    .obs label{font-size:10px;margin-bottom:3px}
+    .obs textarea{min-height:54px;font-size:10px;padding:6px 8px}
+    .resultcard{background:#fff;color:var(--ink);border:1.5px solid var(--navy);border-radius:8px;padding:8px 12px;text-align:left}
+    .resultcard .row{font-size:10px;opacity:1;color:var(--muted);padding:1px 0}
+    .resultcard .row b{font-size:11px;color:var(--navy)}
+    .resultcard .big{margin:4px 0 0;border-top:1px solid var(--line);padding-top:5px;display:flex;align-items:baseline;justify-content:flex-start;gap:4px}
+    .resultcard .big .n{font-size:24px;color:var(--navy)}
+    .resultcard .big .d{font-size:13px;color:var(--muted)}
+    .resultcard .prog,.resultcard .barwrap{display:none}
+
+    .signs{padding:10px 0 0;gap:24px}
+    .sign{font-size:10px;padding-top:6px}
+    .sign small{font-size:9px}
+
+    .scores button[aria-pressed="true"],.sechead,.datebox,.modes button[aria-pressed="true"]{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    textarea{border:1px solid #999!important;background:#fff!important}
+    .section,.footgrid,.signs{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Bandeau résultat collant -->
+  <div class="scorebar">
+    <div class="brandmini">
+      <svg class="regmark" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="#1B3A52" stroke-width="1.5"/><path d="M12 1v22M1 12h22" stroke="#E8852A" stroke-width="1.5"/></svg>
+      <span class="full">Grille PFMP</span>
+    </div>
+    <div class="grow"></div>
+    <div class="pill"><span class="lab">Total</span><span class="v"><span id="bar-total">0</span>/65</span></div>
+    <div class="final"><span class="lab">Note</span><span class="num" id="bar-note">0</span><span class="den">/20</span></div>
+  </div>
+
+  <div class="doc">
+    <!-- En-tête -->
+    <div class="head">
+      <div class="logo">
+        <div class="mark">
+          <span style="background:#3DAFBC"></span><span style="background:#1B3A52"></span><span style="background:#E8852A"></span><span style="background:#E8C53A"></span>
+        </div>
+        <div class="txt">EREA JEAN MONNET<small>Établissement Régional d'Enseignement Adapté</small></div>
+      </div>
+      <h1>Grille d'évaluation du stagiaire en entreprise<span class="pfmp">Période de Formation en Milieu Professionnel</span></h1>
+    </div>
+
+    <!-- Identité -->
+    <div class="identity">
+      <div class="fieldrow"><label for="f-stagiaire">Nom du stagiaire</label><input id="f-stagiaire" type="text" placeholder="Prénom et nom"></div>
+      <div class="fieldrow"><label for="f-entreprise">Nom de l'entreprise</label><input id="f-entreprise" type="text" placeholder="Raison sociale"></div>
+      <div class="fieldrow"><label for="f-tuteur">Nom du tuteur de stage</label><input id="f-tuteur" type="text" placeholder="Prénom et nom"></div>
+    </div>
+
+    <div class="meta">
+      <div class="datebox"><span>Date</span><input id="f-date" type="date"></div>
+      <div class="modes" role="group" aria-label="Modalité de l'évaluation">
+        <button type="button" id="mode-visio" aria-pressed="false"><span class="dot"></span>Visioconférence</button>
+        <button type="button" id="mode-entreprise" aria-pressed="false"><span class="dot"></span>À l'entreprise</button>
+      </div>
+    </div>
+
+    <!-- Sections injectées par JS -->
+    <div id="sections"></div>
+
+    <!-- Observation + résultat -->
+    <div class="footgrid">
+      <div class="obs">
+        <label for="f-obs">Observation et note du tuteur</label>
+        <textarea id="f-obs" placeholder="Remarques, points forts, axes de progrès…"></textarea>
+      </div>
+      <div class="resultcard">
+        <div class="row"><span>Total de points</span><b><span id="r-total">0</span>/65</b></div>
+        <div class="row"><span>Critères évalués</span><b><span id="r-count">0</span>/13</b></div>
+        <div class="big"><span class="n" id="r-note">0</span><span class="d">/20</span></div>
+        <div class="prog" id="r-prog">Aucun critère évalué</div>
+        <div class="barwrap"><div class="bar" id="r-bar"></div></div>
+      </div>
+    </div>
+
+    <!-- Signatures -->
+    <div class="signs">
+      <div class="sign"><em>Signature du tuteur</em><small>et cachet de l'entreprise si possible</small></div>
+      <div class="sign"><em>Signature de l'enseignant</em></div>
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="actions">
+    <button class="btn ghost" id="btn-reset" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+      Réinitialiser
+    </button>
+    <button class="btn primary" id="btn-print" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Imprimer / Enregistrer en PDF
+    </button>
+  </div>
+</div>
+
+<script>
+const DATA = [
+  {
+    title:"Observation et vie d'entreprise",
+    cls:"sec1",
+    items:[
+      "S'intégrer dans une nouvelle équipe, au sein de l'entreprise, et établir des contacts avec les gens",
+      "Se familiariser avec de nouveaux matériels et un nouvel environnement",
+      "Faire preuve d'écoute active en essayant de comprendre les explications et les consignes",
+      "Observer le cheminement d'un travail dans l'entreprise, de la réception à la livraison",
+      "Faire preuve d'un savoir-être de qualité (ponctualité, assiduité, courtoisie et politesse, respect de la réglementation de l'entreprise)",
+      "Tenue vestimentaire adaptée et correcte"
+    ]
+  },
+  {
+    title:"Productivité : capacité d'optimiser son rendement au travail",
+    cls:"sec2",
+    items:[
+      "Identifier la procédure à effectuer lors de la lecture de la commande",
+      "S'organiser pour réaliser la demande client",
+      "Importer des images au bon format",
+      "Enregistrer et sauvegarder des fichiers informatiques",
+      "Réaliser la préparation à l'impression",
+      "Sortir des épreuves de contrôle sur imprimantes",
+      "Remplir les dossiers de fabrication pour le suivi de la commande"
+    ]
+  }
+];
+
+const MAX = 65; // 13 critères × 5
+const NB_CRIT = DATA.reduce((n,s)=>n+s.items.length,0);
+const scores = {}; // id -> valeur
+
+const root = document.getElementById('sections');
+let gid = 0;
+DATA.forEach((sec, si)=>{
+  const wrap = document.createElement('div');
+  wrap.className = 'section '+sec.cls;
+  wrap.innerHTML = `
+    <div class="sechead"><span class="n">${si+1}</span>${sec.title}</div>
+    <div class="sechint">
+      <span>Le stagiaire a été en mesure de <em>(pts)</em> :</span>
+      <span class="scale"><b>1</b> insuffisant&nbsp;·&nbsp;<b>5</b> maîtrisé</span>
+    </div>`;
+  sec.items.forEach((label, i)=>{
+    const id = 'c'+(gid++);
+    const crit = document.createElement('div');
+    crit.className = 'crit';
+    crit.dataset.id = id;
+    let btns = '';
+    for(let v=1; v<=5; v++){
+      btns += `<button type="button" data-v="${v}" aria-pressed="false" aria-label="Note ${v} sur 5">${v}</button>`;
+    }
+    crit.innerHTML = `<div class="lbl"><span class="num">${i+1}.</span>${label}</div><div class="scores" role="group">${btns}</div>`;
+    crit.querySelectorAll('.scores button').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const v = +b.dataset.v;
+        if(scores[id] === v){ delete scores[id]; } else { scores[id] = v; }
+        crit.querySelectorAll('.scores button').forEach(x=>x.setAttribute('aria-pressed', (+x.dataset.v===scores[id]).toString()));
+        crit.classList.toggle('done', id in scores);
+        recompute();
+      });
+    });
+    wrap.appendChild(crit);
+  });
+  const sub = document.createElement('div');
+  sub.className = 'subtotal';
+  sub.innerHTML = `Sous-total section ${si+1} : <b data-sub="${si}">0</b>/${sec.items.length*5}`;
+  wrap.appendChild(sub);
+  root.appendChild(wrap);
+});
+
+function recompute(){
+  let total = 0, count = 0;
+  const subs = [0,0];
+  let gi = 0;
+  DATA.forEach((sec, si)=>{
+    sec.items.forEach(()=>{
+      const id = 'c'+gi++;
+      if(id in scores){ total += scores[id]; count++; subs[si] += scores[id]; }
+    });
+  });
+  const note = Math.round((total/MAX)*20*10)/10;
+  const noteTxt = Number.isInteger(note) ? note.toString() : note.toFixed(1).replace('.', ',');
+
+  document.getElementById('r-total').textContent = total;
+  document.getElementById('bar-total').textContent = total;
+  document.getElementById('r-count').textContent = count;
+  document.getElementById('r-note').textContent = noteTxt;
+  document.getElementById('bar-note').textContent = noteTxt;
+  document.querySelectorAll('[data-sub]').forEach(el=>{ el.textContent = subs[+el.dataset.sub]; });
+
+  document.getElementById('r-bar').style.width = (count/NB_CRIT*100)+'%';
+  const prog = document.getElementById('r-prog');
+  if(count===0) prog.textContent = "Aucun critère évalué";
+  else if(count<NB_CRIT) prog.textContent = `Estimation partielle · ${NB_CRIT-count} critère(s) restant(s)`;
+  else prog.textContent = "Évaluation complète ✓";
+}
+
+document.querySelectorAll('.modes button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    const on = b.getAttribute('aria-pressed')==='true';
+    b.setAttribute('aria-pressed', (!on).toString());
+  });
+});
+
+document.getElementById('btn-print').addEventListener('click', ()=>window.print());
+document.getElementById('btn-reset').addEventListener('click', ()=>{
+  if(!confirm("Effacer toutes les notes et informations saisies ?")) return;
+  for(const k in scores) delete scores[k];
+  document.querySelectorAll('.scores button').forEach(b=>b.setAttribute('aria-pressed','false'));
+  document.querySelectorAll('.crit').forEach(c=>c.classList.remove('done'));
+  document.querySelectorAll('.modes button').forEach(b=>b.setAttribute('aria-pressed','false'));
+  document.querySelectorAll('input').forEach(i=>i.value='');
+  document.getElementById('f-obs').value='';
+  recompute();
+});
+
+recompute();
+</script>
+</body>
+</html>
